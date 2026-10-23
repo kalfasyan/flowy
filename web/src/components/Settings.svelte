@@ -31,6 +31,11 @@
     }
   }
 
+  function signOut() {
+    tracker.forget();
+    session.logout();
+  }
+
   function download(csv: string) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -156,10 +161,14 @@
     <p class="text-zinc-600 dark:text-zinc-400">
       Signed in as {user.name || user.email}{session.isOwner ? ' (owner)' : ''}.
     </p>
-    <button class="btn-secondary shrink-0 px-3 py-2 text-sm" onclick={() => session.logout()}
-      >Sign out</button
-    >
+    <button class="btn-secondary shrink-0 px-3 py-2 text-sm" onclick={signOut}>Sign out</button>
   </div>
+  {#if tracker.unsynced}
+    <p class="text-amber-700 dark:text-amber-300">
+      {tracker.unsynced} logged {tracker.unsynced === 1 ? 'day is' : 'days are'} only on this phone so
+      far. Signing out now would lose {tracker.unsynced === 1 ? 'it' : 'them'}.
+    </p>
+  {/if}
   {#if session.isOwner}
     <p class="text-zinc-600 dark:text-zinc-400">
       Add people and manage data in the <a

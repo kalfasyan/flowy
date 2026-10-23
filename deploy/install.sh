@@ -63,6 +63,8 @@ if [ ! -f .env ]; then
 		setenv PGID "${SUDO_GID:-$(id -g)}"
 	fi
 	setenv TS_HOSTNAME "$(basename "$dir")"
+	# another app may already use 8090: PORT=8091 sh install.sh
+	if [ -n "${PORT:-}" ]; then setenv PORT "$PORT"; fi
 
 	key=${TS_AUTHKEY:-}
 	if [ -z "$key" ] && interactive; then

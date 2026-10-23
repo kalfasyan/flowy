@@ -69,8 +69,7 @@
           {formatDay(day, { weekday: 'long', month: 'long', day: 'numeric' })}
         </h2>
         <p class="text-sm text-zinc-500">
-          {#if n}Cycle day {n} ·
-          {/if}<span class="capitalize">{chance}</span> chance of pregnancy
+          {#if n}Cycle day {n} ·{' '}{/if}<span class="capitalize">{chance}</span> chance of pregnancy
         </p>
       </div>
       <button class="text-2xl leading-none text-zinc-400" aria-label="Close" onclick={onclose}

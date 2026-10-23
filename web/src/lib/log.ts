@@ -4,8 +4,8 @@ import type { RecordModel } from 'pocketbase';
 
 export type Flow = '' | 'spotting' | 'light' | 'medium' | 'heavy';
 
-export interface DayLog extends RecordModel {
-  user: string;
+/** What's logged for a day. */
+export interface DayFields {
   date: string;
   flow: Flow;
   symptoms: string[];
@@ -15,6 +15,10 @@ export interface DayLog extends RecordModel {
   temperature: number;
   weight: number;
   notes: string;
+}
+
+export interface DayLog extends RecordModel, DayFields {
+  user: string;
 }
 
 export const flows: { value: Flow; label: string }[] = [

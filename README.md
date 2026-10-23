@@ -1,6 +1,39 @@
-# flowy
+<div align="center">
 
-A self-hosted app built on [plasto](https://github.com/kalfasyan/plasto).
+<img src="web/public/icons/icon.svg" width="88" alt="">
+
+# Flowy
+
+**A private period and cycle tracker that runs on your own server.**
+
+<img src="docs/images/today.png" width="230" alt="The today screen: days until the next period, cycle day and chance of pregnancy">&nbsp;
+<img src="docs/images/calendar.png" width="230" alt="The calendar with logged and predicted periods, the fertile window and ovulation">&nbsp;
+<img src="docs/images/today-dark.png" width="230" alt="The today screen in dark mode">
+
+</div>
+
+Flowy predicts your next period, fertile window and ovulation from the periods
+you log, and keeps everything on your own hardware (a NAS, a Raspberry Pi, a
+small server). Install it on your phone from the browser.
+
+- **Today:** days until your period (or which day of it you're on, or how late it
+  is), cycle day, chance of pregnancy, the phase you're in, and today's log.
+- **Calendar:** logged periods, predicted periods, fertile days and ovulation.
+  Tap a day to log it, or edit period days in one go.
+- **Day log:** flow, symptoms, moods, sex, pill, temperature, weight and notes.
+- **Insights:** average cycle and period length, cycle history, temperature
+  chart, and your most common symptoms and moods.
+- **Reminders:** a push notification two days before your period, when your
+  fertile window starts, and for your pill.
+- **Works offline:** logs are saved on the phone and sent to the server when it
+  is reachable again.
+- **Private:** sign-in with email and password, each person only sees their own
+  calendar, and the data never leaves your server. Export it as CSV any time.
+
+Predictions are estimates, not a form of birth control.
+
+Flowy is built on [plasto](https://github.com/kalfasyan/plasto). To run it on a
+Synology NAS, follow [docs/synology.md](docs/synology.md).
 
 ## Quick start
 

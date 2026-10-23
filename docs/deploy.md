@@ -102,22 +102,9 @@ docker run -d --name worker --restart unless-stopped \
 
 ## Synology NAS
 
-Needs DSM 7.2 or later with **Container Manager** installed.
-
-1. In Control Panel > Terminal & SNMP, enable SSH, then sign in with
-   `ssh you@nas.local`.
-2. Install into a shared folder, with `sudo` because Docker on DSM needs it:
-   ```sh
-   curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sudo sh -s /volume1/docker/flowy
-   ```
-   The data stays owned by your DSM user (`PUID` and `PGID` in `.env`), so you can
-   see and back it up in File Station.
-3. The containers show up in Container Manager, where you can see their logs and
-   restart them. Update from SSH as above.
-
-To serve the app on the internet instead of only your tailnet, add a rule under
-Control Panel > Login Portal > Advanced > Reverse Proxy from your HTTPS host name
-to `localhost:8090`. Never do this for apps that show cameras.
+See [synology.md](synology.md): install with one SSH command, then serve it at
+`https://flowy.<your-name>.synology.me` with Synology's reverse proxy and a Let's
+Encrypt certificate.
 
 ## Raspberry Pi
 

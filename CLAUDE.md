@@ -1,7 +1,15 @@
 # CLAUDE.md
 
-flowy is a self-hosted app built on the plasto template: a Go backend on PocketBase (`backend/`)
-serving a Svelte 5 + Tailwind web app (`web/`).
+Flowy is a self-hosted period and cycle tracker built on the plasto template: a Go backend
+on PocketBase (`backend/`) serving a Svelte 5 + Tailwind web app (`web/`).
+
+- Each person's day logs are in the `days` collection (one per user and date); their cycle
+  settings and reminder choices are fields on `users`.
+- Cycle math is in `web/src/lib/cycle.ts` and, for reminders, `backend/cycle`: keep the two
+  in step. Days are whole days since 1970-01-01, so time zones never shift a date.
+- The web app saves logs on the device first and syncs them (`web/src/lib/tracker.svelte.ts`,
+  `offline.ts`), so it works offline.
+- Never mention other period-tracking apps by name, in code, docs or commits.
 
 ## Commands
 
