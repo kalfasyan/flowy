@@ -3,10 +3,17 @@
 @theme {
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* the brand color: change these to restyle every button and link */
-  --color-brand-400: var(--color-indigo-400);
-  --color-brand-500: var(--color-indigo-500);
-  --color-brand-600: var(--color-indigo-600);
-  --color-brand-700: var(--color-indigo-700);
+  --color-brand-50: var(--color-rose-50);
+  --color-brand-100: var(--color-rose-100);
+  --color-brand-400: var(--color-rose-400);
+  --color-brand-500: var(--color-rose-500);
+  --color-brand-600: var(--color-rose-600);
+  --color-brand-700: var(--color-rose-700);
+  /* fertile days and ovulation in the calendar */
+  --color-fertile-100: var(--color-teal-100);
+  --color-fertile-500: var(--color-teal-500);
+  --color-fertile-600: var(--color-teal-600);
+  --color-fertile-700: var(--color-teal-700);
 }
 
 @layer base {
@@ -43,6 +50,12 @@
   }
   .btn-secondary {
     @apply btn border border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm transition dark:border-zinc-700 dark:bg-zinc-900;
+  }
+  .chip[aria-pressed='true'] {
+    @apply border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400;
   }
   .card {
     @apply rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900;

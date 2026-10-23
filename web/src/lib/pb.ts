@@ -7,6 +7,11 @@ export interface User extends RecordModel {
   email: string;
   name: string;
   role: 'owner' | 'member' | '';
+  cycle_length: number;
+  period_length: number;
+  luteal_length: number;
+  remind_period: boolean;
+  remind_fertile: boolean;
 }
 
 /** Turns an API error into a sentence to show the user. */
