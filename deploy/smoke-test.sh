@@ -3,7 +3,7 @@
 # docker-compose.yml in a scratch folder, signs up the owner, creates a worker
 # account, runs one worker round and checks that the worker reported in.
 #
-#   PLASTO_IMAGE=plasto:dev PLASTO_WORKER_IMAGE=plasto-worker:dev deploy/smoke-test.sh
+#   FLOWY_IMAGE=flowy:dev FLOWY_WORKER_IMAGE=flowy-worker:dev deploy/smoke-test.sh
 #
 # Set EXPECT_VERSION to also check the version the app reports.
 set -eu
@@ -28,13 +28,13 @@ step() { echo "--- $*"; }
 cp "$here/docker-compose.yml" "$dir/"
 mkdir "$dir/pb_data"
 cat >"$dir/.env" <<ENV
-PLASTO_IMAGE=${PLASTO_IMAGE:-ghcr.io/kalfasyan/plasto:latest}
-PLASTO_WORKER_IMAGE=${PLASTO_WORKER_IMAGE:-ghcr.io/kalfasyan/plasto-worker:latest}
+FLOWY_IMAGE=${FLOWY_IMAGE:-ghcr.io/kalfasyan/flowy:latest}
+FLOWY_WORKER_IMAGE=${FLOWY_WORKER_IMAGE:-ghcr.io/kalfasyan/flowy-worker:latest}
 PUID=$(id -u)
 PGID=$(id -g)
 PORT=$port
-PLASTO_WORKER=smoke
-PLASTO_WORKER_PASSWORD=smoke-worker-pw
+FLOWY_WORKER=smoke
+FLOWY_WORKER_PASSWORD=smoke-worker-pw
 ENV
 cd "$dir"
 
