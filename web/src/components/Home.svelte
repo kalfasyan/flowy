@@ -1,62 +1,106 @@
 <script lang="ts">
-  import { pb } from '../lib/pb';
-  import { install } from '../lib/install.svelte';
-  import { session } from '../lib/session.svelte';
-  import DemoItems from './DemoItems.svelte'; // DEMO
-  import Notifications from './Notifications.svelte';
+  import { onMount } from 'svelte';
+  import { tracker } from '../lib/tracker.svelte';
+  import Calendar from './Calendar.svelte';
+  import DayLogSheet from './DayLogSheet.svelte';
+  import Insights from './Insights.svelte';
+  import Settings from './Settings.svelte';
+  import Today from './Today.svelte';
 
-  const user = $derived(session.user!);
-  const version = pb
-    .send<{ version: string }>('/api/app/info', {})
-    .then((i) => i.version)
-    .catch(() => '');
+  // The signed-in app: four tabs, each with its own #address so Back works.
+  const tabs = [
+    {
+      id: 'today',
+      label: 'Today',
+      icon: 'M12 3.5c-2.9 3.6-6.5 7.9-6.5 11.4a6.5 6.5 0 0 0 13 0c0-3.5-3.6-7.8-6.5-11.4Z',
+    },
+    {
+      id: 'calendar',
+      label: 'Calendar',
+      icon: 'M7 3v3m10-3v3M4 9h16M5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12A1.5 1.5 0 0 1 5.5 5Z',
+    },
+    { id: 'insights', label: 'Insights', icon: 'M5 20V12m7 8V5m7 15v-6' },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: 'M4 7h10m4 0h2M4 17h2m4 0h10M16 4.5v5M8 14.5v5',
+    },
+  ] as const;
+  type Tab = (typeof tabs)[number]['id'];
+
+  const fromHash = (): Tab => tabs.find((t) => `#${t.id}` === location.hash)?.id ?? 'today';
+  let tab = $state<Tab>(fromHash());
+  let logging = $state<string | null>(null);
+  const log = (date: string) => (logging = date);
+
+  onMount(() => {
+    tracker.load();
+    const onHash = () => (tab = fromHash());
+    addEventListener('hashchange', onHash);
+    return () => removeEventListener('hashchange', onHash);
+  });
 </script>
 
-<main
-  class="mx-auto flex min-h-dvh max-w-md flex-col gap-4 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-8"
->
-  <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold tracking-tight">Hi {user.name || user.email}</h1>
-    <button class="btn-secondary px-3 py-2 text-sm" onclick={() => session.logout()}
-      >Sign out</button
-    >
-  </header>
-
-  <section class="card">
-    <h2 class="font-semibold">Your app starts here</h2>
-    <p class="mt-1 text-zinc-600 dark:text-zinc-400">
-      Edit <code class="font-mono text-sm">web/src/components/Home.svelte</code> and save.
-    </p>
-  </section>
-
-  <!-- DEMO start -->
-  <DemoItems />
-  <!-- DEMO end -->
-
-  {#if install.canPrompt}
-    <section class="card flex items-center justify-between gap-4">
-      <p>Install this app for quick access from your home screen.</p>
-      <button class="btn-primary shrink-0" onclick={() => install.install()}>Install</button>
-    </section>
-  {:else if install.needsIosSteps}
-    <section class="card">
-      <p>To install this app, tap <b>Share</b> in Safari, then <b>Add to Home Screen</b>.</p>
-    </section>
-  {/if}
-
-  <Notifications />
-
-  <section class="card text-sm text-zinc-600 dark:text-zinc-400">
-    Signed in as {user.email}{session.isOwner ? ' (owner)' : ''}.
-    {#if session.isOwner}
-      Manage users and data in the <a
-        class="text-brand-600 underline dark:text-brand-400"
-        href="/_/">admin page</a
-      >.
+<div class="mx-auto min-h-dvh max-w-md">
+  <main class="flex flex-col gap-4 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-28">
+    {#if tracker.error}
+      <section class="card flex items-center justify-between gap-4" role="alert">
+        <p>{tracker.error}</p>
+        <button class="btn-secondary shrink-0" onclick={() => tracker.load()}>Try again</button>
+      </section>
     {/if}
-  </section>
+    {#if tracker.offline || tracker.unsynced}
+      <p
+        class="rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
+        role="status"
+      >
+        {tracker.offline ? "Can't reach your server. " : ''}{tracker.unsynced
+          ? `${tracker.unsynced} ${tracker.unsynced === 1 ? 'day' : 'days'} saved on this phone, sent when you're back online.`
+          : 'Showing what is saved on this phone.'}
+      </p>
+    {/if}
+    {#if tab === 'today'}
+      <Today onlog={log} />
+    {:else if tab === 'calendar'}
+      <Calendar onlog={log} />
+    {:else if tab === 'insights'}
+      <Insights />
+    {:else}
+      <Settings />
+    {/if}
+  </main>
 
-  {#await version then v}
-    {#if v}<p class="mt-auto text-center text-xs text-zinc-400">Version {v}</p>{/if}
-  {/await}
-</main>
+  <nav
+    class="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90"
+  >
+    <div class="mx-auto grid max-w-md grid-cols-4">
+      {#each tabs as t (t.id)}
+        <a
+          href="#{t.id}"
+          class="flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium {tab === t.id
+            ? 'text-brand-600 dark:text-brand-400'
+            : 'text-zinc-500'}"
+          aria-current={tab === t.id ? 'page' : undefined}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"><path d={t.icon} /></svg
+          >
+          {t.label}
+        </a>
+      {/each}
+    </div>
+  </nav>
+
+  {#if logging}
+    {#key logging}
+      <DayLogSheet date={logging} onclose={() => (logging = null)} />
+    {/key}
+  {/if}
+</div>

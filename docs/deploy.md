@@ -1,6 +1,6 @@
 # Deploy
 
-A plasto app runs as one container on any Linux machine with Docker: a NAS, a
+A flowy app runs as one container on any Linux machine with Docker: a NAS, a
 Raspberry Pi, a small server. Workers run next to it or on other machines.
 Tailscale gives your devices an `https://` address for it without opening
 anything to the internet.
@@ -13,7 +13,7 @@ anything to the internet.
 ```
 
 Every push to `main` publishes two images for amd64, arm64 and armv7:
-`ghcr.io/kalfasyan/plasto` (the app) and `ghcr.io/kalfasyan/plasto-worker` (the
+`ghcr.io/kalfasyan/flowy` (the app) and `ghcr.io/kalfasyan/flowy-worker` (the
 Python workers). A tag like `v1.2.0` publishes `:v1.2.0` of both.
 
 ## Install
@@ -21,12 +21,12 @@ Python workers). A tag like `v1.2.0` publishes `:v1.2.0` of both.
 On the machine, as a user that can run `docker`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kalfasyan/plasto/main/deploy/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sh
 ```
 
-This creates `~/plasto` with the compose files, a `.env` and a `pb_data` folder
+This creates `~/flowy` with the compose files, a `.env` and a `pb_data` folder
 for the database, asks for a Tailscale auth key (press Enter to skip), and starts
-the app. Pass a folder to install elsewhere: `... | sh -s /srv/plasto`.
+the app. Pass a folder to install elsewhere: `... | sh -s /srv/flowy`.
 
 Then open the app and create your account; the first person becomes the owner.
 Without Tailscale it is only reachable on the machine itself, at
@@ -43,7 +43,7 @@ install script again).
 2. Create an [auth key](https://login.tailscale.com/admin/settings/keys) and paste it
    when the install script asks. It is only used for the first sign-in; the
    sidecar keeps its login in `tailscale/`.
-3. The app is now at `https://plasto.<your-tailnet>.ts.net` (the script prints it).
+3. The app is now at `https://flowy.<your-tailnet>.ts.net` (the script prints it).
    The first visit can take a few seconds while the certificate is issued.
 
 On a phone, install the Tailscale app, open that address and add it to the home
@@ -55,12 +55,12 @@ To add Tailscale later, set `TS_AUTHKEY` and uncomment the `COMPOSE_FILE` line i
 ## Updates and versions
 
 ```sh
-cd ~/plasto && docker compose pull && docker compose up -d
+cd ~/flowy && docker compose pull && docker compose up -d
 ```
 
 Running the install script again does the same and also refreshes the compose
-files. To stay on a release, or go back to one, set `PLASTO_IMAGE` (and
-`PLASTO_WORKER_IMAGE`) in `.env` to a tag, like `ghcr.io/kalfasyan/plasto:v1.2.0`.
+files. To stay on a release, or go back to one, set `FLOWY_IMAGE` (and
+`FLOWY_WORKER_IMAGE`) in `.env` to a tag, like `ghcr.io/kalfasyan/flowy:v1.2.0`.
 Database migrations run on start, so take a backup before going back across one.
 
 ## Backups and restore
@@ -80,12 +80,12 @@ there.
 
 1. In the admin UI, open the **workers** collection and add one with a name and a
    password.
-2. In `.env`, set `PLASTO_WORKER` and `PLASTO_WORKER_PASSWORD` and uncomment
+2. In `.env`, set `FLOWY_WORKER` and `FLOWY_WORKER_PASSWORD` and uncomment
    `COMPOSE_PROFILES=worker`.
 3. Run `docker compose up -d`.
 
 It runs `workers/worker.py`, the starting point for your own worker. To run another
-one, set `PLASTO_WORKER_SCRIPT` in `.env`, for example to `camera.py`. Every `.py`
+one, set `FLOWY_WORKER_SCRIPT` in `.env`, for example to `camera.py`. Every `.py`
 file in `workers/` and every dependency you add with `uv add` is in the worker image.
 
 ### On another machine
@@ -95,29 +95,16 @@ address:
 
 ```sh
 docker run -d --name worker --restart unless-stopped \
-  -e PLASTO_URL=https://plasto.<your-tailnet>.ts.net \
-  -e PLASTO_WORKER=camera -e PLASTO_WORKER_PASSWORD=... -e TZ=Europe/Athens \
-  ghcr.io/kalfasyan/plasto-worker python camera.py
+  -e FLOWY_URL=https://flowy.<your-tailnet>.ts.net \
+  -e FLOWY_WORKER=camera -e FLOWY_WORKER_PASSWORD=... -e TZ=Europe/Athens \
+  ghcr.io/kalfasyan/flowy-worker python camera.py
 ```
 
 ## Synology NAS
 
-Needs DSM 7.2 or later with **Container Manager** installed.
-
-1. In Control Panel > Terminal & SNMP, enable SSH, then sign in with
-   `ssh you@nas.local`.
-2. Install into a shared folder, with `sudo` because Docker on DSM needs it:
-   ```sh
-   curl -fsSL https://raw.githubusercontent.com/kalfasyan/plasto/main/deploy/install.sh | sudo sh -s /volume1/docker/plasto
-   ```
-   The data stays owned by your DSM user (`PUID` and `PGID` in `.env`), so you can
-   see and back it up in File Station.
-3. The containers show up in Container Manager, where you can see their logs and
-   restart them. Update from SSH as above.
-
-To serve the app on the internet instead of only your tailnet, add a rule under
-Control Panel > Login Portal > Advanced > Reverse Proxy from your HTTPS host name
-to `localhost:8090`. Never do this for apps that show cameras.
+See [synology.md](synology.md): install with one SSH command, then serve it at
+`https://flowy.<your-name>.synology.me` with Synology's reverse proxy and a Let's
+Encrypt certificate.
 
 ## Raspberry Pi
 

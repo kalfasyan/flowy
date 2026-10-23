@@ -1,8 +1,15 @@
 # CLAUDE.md
 
-plasto is a template for self-hosted apps: a Go backend on PocketBase (`backend/`)
-serving a Svelte 5 + Tailwind web app (`web/`). Decisions and the build plan are in
-`docs/decisions.md`.
+Flowy is a self-hosted period and cycle tracker built on the plasto template: a Go backend
+on PocketBase (`backend/`) serving a Svelte 5 + Tailwind web app (`web/`).
+
+- Each person's day logs are in the `days` collection (one per user and date); their cycle
+  settings and reminder choices are fields on `users`.
+- Cycle math is in `web/src/lib/cycle.ts` and, for reminders, `backend/cycle`: keep the two
+  in step. Days are whole days since 1970-01-01, so time zones never shift a date.
+- The web app saves logs on the device first and syncs them (`web/src/lib/tracker.svelte.ts`,
+  `offline.ts`), so it works offline.
+- Never mention other period-tracking apps by name, in code, docs or commits.
 
 ## Commands
 
@@ -23,16 +30,6 @@ serving a Svelte 5 + Tailwind web app (`web/`). Decisions and the build plan are
 - Heavy work (ML, scraping, LLM calls) goes in a Python worker under `workers/` that uses
   `plasto_worker.Client`; workers write records, Go hooks react. Allow workers in API rules
   with `@request.auth.collectionName = "workers"`.
-<!-- DEMO start -->
-- Demo code is marked `DEMO`: files that start with a `DEMO:` comment, lines that end in
-  a `DEMO` comment, and `DEMO start`/`DEMO end` blocks. `scripts/strip-demo.sh` removes it.
-<!-- DEMO end -->
-<!-- TEMPLATE start -->
-- Parts that only make sense in the template itself are marked `TEMPLATE start`/`TEMPLATE end`;
-  `scripts/rename.sh` removes them. The `template` CI job makes an app with `rename.sh` and
-  `strip-demo.sh` and runs its checks and tests, so keep both scripts working.
-- `docs/first-feature.md` is tested by hand: when its code drifts from the template, update it.
-<!-- TEMPLATE end -->
 - `docs/first-feature.md` walks through adding a feature across every layer.
 - Deploy files are in `deploy/` (see `docs/deploy.md`); `make smoke` runs the images with
   `deploy/docker-compose.yml` end to end, and CI runs it on every PR.

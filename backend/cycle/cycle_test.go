@@ -1,0 +1,64 @@
+package cycle
+
+import (
+	"testing"
+	"time"
+)
+
+func day(t *testing.T, s string) Day {
+	t.Helper()
+	d, err := Parse(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return d
+}
+
+func run(t *testing.T, from string, n int) []Day {
+	var out []Day
+	for i := range n {
+		out = append(out, day(t, from)+Day(i))
+	}
+	return out
+}
+
+func TestOf(t *testing.T) {
+	brussels, _ := time.LoadLocation("Europe/Brussels")
+	late := time.Date(2026, 10, 23, 23, 30, 0, 0, brussels)
+	if got, want := Of(late), day(t, "2026-10-23"); got != want {
+		t.Errorf("Of(%v) = %d, want %d", late, got, want)
+	}
+}
+
+func TestPredict(t *testing.T) {
+	if _, ok := Predict(nil, Defaults, day(t, "2026-01-01")); ok {
+		t.Error("predicted without any logged period")
+	}
+
+	// two 30-day cycles of 4-day periods (same case as web/src/lib/cycle.test.ts)
+	bleeding := append(append(run(t, "2026-01-01", 4), run(t, "2026-01-31", 4)...), run(t, "2026-03-02", 4)...)
+	f, _ := Predict(bleeding, Defaults, day(t, "2026-03-20"))
+	if f.NextStart != day(t, "2026-04-01") || f.InPeriod || f.Late != 0 {
+		t.Errorf("got %+v, want the next period on 2026-04-01", f)
+	}
+	if f.Ovulations[0] != day(t, "2026-03-18") || f.Ovulations[1] != day(t, "2026-04-17") {
+		t.Errorf("ovulations %v, want 2026-03-18 and 2026-04-17", f.Ovulations)
+	}
+
+	f, _ = Predict([]Day{day(t, "2026-02-01")}, Defaults, day(t, "2026-02-03"))
+	if !f.InPeriod {
+		t.Error("not in a period on its third expected day")
+	}
+
+	f, _ = Predict(run(t, "2026-01-01", 5), Defaults, day(t, "2026-02-02"))
+	if f.Late != 4 {
+		t.Errorf("late %d days, want 4", f.Late)
+	}
+}
+
+func TestPeriodsBridgeAMissedDay(t *testing.T) {
+	ps := Periods([]Day{day(t, "2026-01-04"), day(t, "2026-01-01"), day(t, "2026-01-02"), day(t, "2026-01-02")})
+	if len(ps) != 1 || ps[0] != (Period{day(t, "2026-01-01"), day(t, "2026-01-04")}) {
+		t.Errorf("got %v", ps)
+	}
+}
