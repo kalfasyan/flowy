@@ -3,6 +3,7 @@
   import { days, formatDay } from '../lib/format';
   import { moods, symptoms } from '../lib/log';
   import { tracker } from '../lib/tracker.svelte';
+  import Cat from './Cat.svelte';
   import DayDot from './DayDot.svelte';
 
   let { onlog }: { onlog: (date: string) => void } = $props();
@@ -155,12 +156,20 @@
   </section>
 </div>
 
-{#if phaseNow}
-  <section class="card flex flex-col gap-1">
-    <h2 class="font-semibold">{phaseInfo[phaseNow].title}</h2>
-    <p class="text-sm text-zinc-600 dark:text-zinc-400">{phaseInfo[phaseNow].text}</p>
-  </section>
-{/if}
+<section class="card flex items-center gap-3 py-3 pl-2">
+  <Cat phase={phaseNow} />
+  <div class="relative rounded-2xl bg-brand-50 px-4 py-3 dark:bg-brand-500/10">
+    <span
+      class="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rotate-45 bg-brand-50 dark:bg-brand-500/10"
+    ></span>
+    <h2 class="font-semibold">{phaseNow ? phaseInfo[phaseNow].title : 'Hi, I’m Mochi!'}</h2>
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">
+      {phaseNow
+        ? phaseInfo[phaseNow].text
+        : 'Log your period and I’ll keep track of your cycle with you.'}
+    </p>
+  </div>
+</section>
 
 <section class="card flex flex-col gap-3">
   <div class="flex items-center justify-between">

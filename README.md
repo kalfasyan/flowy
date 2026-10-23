@@ -18,6 +18,8 @@ small server). Install it on your phone from the browser.
 
 - **Today:** days until your period (or which day of it you're on, or how late it
   is), cycle day, chance of pregnancy, the phase you're in, and today's log.
+- **Mochi:** an animated cat that naps during your period, plays, sends hearts in
+  your fertile window and curls up before your next period, with a tip for each phase.
 - **Calendar:** logged periods, predicted periods, fertile days and ovulation.
   Tap a day to log it, or edit period days in one go.
 - **Day log:** flow, symptoms, moods, sex, pill, temperature, weight and notes.
