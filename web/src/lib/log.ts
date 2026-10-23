@@ -65,3 +65,26 @@ export function isEmpty(log: Partial<DayLog>): boolean {
     !log.notes?.trim()
   );
 }
+
+/** Day logs as CSV, oldest first, for a spreadsheet. */
+export function exportCsv(logs: Iterable<DayLog>): string {
+  const fields = [
+    'date',
+    'flow',
+    'symptoms',
+    'moods',
+    'sex',
+    'pill',
+    'temperature',
+    'weight',
+    'notes',
+  ] as const;
+  const cell = (v: unknown) => {
+    const s = Array.isArray(v) ? v.join(' ') : v === false || v === 0 || v == null ? '' : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const rows = [...logs]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((l) => fields.map((f) => cell(l[f])).join(','));
+  return [fields.join(','), ...rows].join('\n') + '\n';
+}

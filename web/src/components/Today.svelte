@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cycleDay, pregnancyChance, toIso, type Day } from '../lib/cycle';
+  import { cycleDay, cyclePhase, pregnancyChance, toIso, type Day } from '../lib/cycle';
   import { days, formatDay } from '../lib/format';
   import { moods, symptoms } from '../lib/log';
   import { tracker } from '../lib/tracker.svelte';
@@ -74,6 +74,25 @@
 
   const fertileNow = $derived(phase === 'fertile' || phase === 'ovulation');
   const periodNow = $derived(!!a.current);
+  const phaseNow = $derived(cyclePhase(a, now));
+  const phaseInfo = {
+    menstrual: {
+      title: 'Menstrual phase',
+      text: 'Energy can be lower. Rest, warmth and iron-rich food help.',
+    },
+    follicular: {
+      title: 'Follicular phase',
+      text: 'Estrogen rises and energy usually picks up. A good time for new plans and workouts.',
+    },
+    fertile: {
+      title: 'Fertile window',
+      text: 'The days around ovulation, when pregnancy is most likely.',
+    },
+    luteal: {
+      title: 'Luteal phase',
+      text: 'Progesterone rises. Cravings, bloating or mood changes can show up before your period.',
+    },
+  };
   const label = (d: Day) => formatDay(d, { weekday: 'narrow' });
 </script>
 
@@ -135,6 +154,13 @@
     <p class="mt-1 text-xs text-zinc-500">from your fertile window</p>
   </section>
 </div>
+
+{#if phaseNow}
+  <section class="card flex flex-col gap-1">
+    <h2 class="font-semibold">{phaseInfo[phaseNow].title}</h2>
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">{phaseInfo[phaseNow].text}</p>
+  </section>
+{/if}
 
 <section class="card flex flex-col gap-3">
   <div class="flex items-center justify-between">

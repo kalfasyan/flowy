@@ -30,6 +30,7 @@ func init() {
 			// daily reminders, sent by the "reminders" job (backend/app/reminders.go)
 			&core.BoolField{Name: "remind_period"},
 			&core.BoolField{Name: "remind_fertile"},
+			&core.BoolField{Name: "remind_pill"},
 		)
 		if err := app.Save(users); err != nil {
 			return err
@@ -68,7 +69,7 @@ func init() {
 		if err != nil {
 			return err
 		}
-		for _, name := range []string{"cycle_length", "period_length", "luteal_length", "remind_period", "remind_fertile"} {
+		for _, name := range []string{"cycle_length", "period_length", "luteal_length", "remind_period", "remind_fertile", "remind_pill"} {
 			users.Fields.RemoveByName(name)
 		}
 		return app.Save(users)

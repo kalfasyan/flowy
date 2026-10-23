@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   analyze,
   cycleDay,
+  cyclePhase,
   defaults,
   periods,
   phases,
@@ -96,5 +97,17 @@ describe('phases and chance', () => {
     expect(pregnancyChance(a, d('2026-01-14'))).toBe('high');
     expect(pregnancyChance(a, d('2026-01-11'))).toBe('medium');
     expect(pregnancyChance(a, d('2026-01-20'))).toBe('low');
+  });
+});
+
+describe('cyclePhase', () => {
+  const a = analyze(range('2026-01-01', 5), defaults, d('2026-01-10'));
+
+  it('names the phase of each day', () => {
+    expect(cyclePhase(a, d('2026-01-02'))).toBe('menstrual');
+    expect(cyclePhase(a, d('2026-01-07'))).toBe('follicular');
+    expect(cyclePhase(a, d('2026-01-15'))).toBe('fertile');
+    expect(cyclePhase(a, d('2026-01-20'))).toBe('luteal');
+    expect(cyclePhase(a, d('2025-12-20'))).toBeNull();
   });
 });

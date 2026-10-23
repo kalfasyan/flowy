@@ -1,5 +1,6 @@
 <script lang="ts">
   import { defaults } from '../lib/cycle';
+  import { exportCsv } from '../lib/log';
   import { install } from '../lib/install.svelte';
   import { errorMessage, pb, type User } from '../lib/pb';
   import { session } from '../lib/session.svelte';
@@ -28,6 +29,14 @@
       message = errorMessage(err, 'Could not save. Please try again.');
       return false;
     }
+  }
+
+  function download(csv: string) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'flowy.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   async function saveCycle(e: SubmitEvent) {
@@ -106,10 +115,30 @@
       onchange={(e) => update({ remind_fertile: e.currentTarget.checked })}
     />
   </label>
-  <p class="text-sm text-zinc-500">Sent at 9:00 to devices with notifications turned on.</p>
+  <label class="flex-row items-center justify-between font-normal">
+    Pill, at 21:00 if not logged yet
+    <input
+      type="checkbox"
+      checked={user.remind_pill}
+      onchange={(e) => update({ remind_pill: e.currentTarget.checked })}
+    />
+  </label>
+  <p class="text-sm text-zinc-500">
+    Period and fertile reminders come at 9:00, on devices with notifications turned on.
+  </p>
 </section>
 
 <Notifications />
+
+<section class="card flex items-center justify-between gap-4">
+  <div>
+    <h2 class="font-semibold">Your data</h2>
+    <p class="text-sm text-zinc-500">Download everything you logged, as a spreadsheet.</p>
+  </div>
+  <button class="btn-secondary shrink-0" onclick={() => download(exportCsv(tracker.logs.values()))}
+    >Export</button
+  >
+</section>
 
 {#if install.canPrompt}
   <section class="card flex items-center justify-between gap-4">

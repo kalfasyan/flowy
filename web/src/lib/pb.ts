@@ -12,6 +12,7 @@ export interface User extends RecordModel {
   luteal_length: number;
   remind_period: boolean;
   remind_fertile: boolean;
+  remind_pill: boolean;
 }
 
 /** Turns an API error into a sentence to show the user. */

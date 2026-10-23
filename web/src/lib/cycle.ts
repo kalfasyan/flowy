@@ -152,3 +152,16 @@ export function cycleDay(a: Analysis, day: Day): number | null {
   const before = a.periods.filter((p) => p.start <= day);
   return before.length ? day - before[before.length - 1].start + 1 : null;
 }
+
+export type CyclePhase = 'menstrual' | 'follicular' | 'fertile' | 'luteal';
+
+/** The phase of the cycle a day falls in, or null before any period is logged. */
+export function cyclePhase(a: Analysis, day: Day): CyclePhase | null {
+  const inPeriod = (p: Period) => p.start <= day && day <= p.end;
+  if (a.periods.some(inPeriod) || (a.current && inPeriod(a.current))) return 'menstrual';
+  const before = a.periods.filter((p) => p.start <= day);
+  if (!before.length) return null;
+  const ovulation = a.ovulations.find((o) => o > before[before.length - 1].start);
+  if (ovulation === undefined || day > ovulation + 1) return 'luteal';
+  return day >= ovulation - 5 ? 'fertile' : 'follicular';
+}
