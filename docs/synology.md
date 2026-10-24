@@ -14,15 +14,15 @@ on 8090. Replace `<your-name>` with your Synology DDNS name.
 3. Install into the `docker` shared folder (press Enter when it asks for a
    Tailscale key, unless you use Tailscale):
    ```sh
-   curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sudo PORT=8091 sh -s /volume1/docker/flowy
+   curl -fsSL https://raw.githubusercontent.com/selfhostit/flowy/main/deploy/install.sh | sudo PORT=8091 sh -s /volume1/docker/flowy
    ```
 
 Flowy now runs on the NAS at port 8091, reachable only from the NAS itself, and
 shows up in Container Manager under Project, where you can see its logs. The
 database lives in `/volume1/docker/flowy/pb_data`, owned by your DSM user.
 
-The image comes from `ghcr.io/kalfasyan/flowy`. If the NAS can't pull it, make
-the package public at https://github.com/kalfasyan/flowy/pkgs/container/flowy
+The image comes from `ghcr.io/selfhostit/flowy`. If the NAS can't pull it, make
+the package public at https://github.com/selfhostit/flowy/pkgs/container/flowy
 (Package settings > Change visibility).
 
 ## 2. Address and certificate

@@ -11,7 +11,7 @@
 set -eu
 target=${1:?usage: $0 you@nas-address}
 dir=${FLOWY_DIR:-/volume1/docker/flowy}
-image=ghcr.io/kalfasyan/flowy:latest
+image=ghcr.io/selfhostit/flowy:latest
 
 tz=${TZ:-$(cat /etc/timezone 2>/dev/null || readlink /etc/localtime | sed 's|.*zoneinfo/||')}
 

@@ -6,8 +6,8 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tests"
 
-	"github.com/kalfasyan/flowy/cycle"
-	_ "github.com/kalfasyan/flowy/migrations"
+	"github.com/selfhostit/flowy/cycle"
+	_ "github.com/selfhostit/flowy/migrations"
 )
 
 func TestReminders(t *testing.T) {

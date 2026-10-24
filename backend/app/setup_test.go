@@ -8,8 +8,8 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tests"
 
-	"github.com/kalfasyan/flowy/app"
-	_ "github.com/kalfasyan/flowy/migrations"
+	"github.com/selfhostit/flowy/app"
+	_ "github.com/selfhostit/flowy/migrations"
 )
 
 // newApp starts an empty app with the flowy migrations and routes.

@@ -6,7 +6,7 @@ import (
 
 	"github.com/pocketbase/pocketbase/tests"
 
-	"github.com/kalfasyan/flowy/app"
+	"github.com/selfhostit/flowy/app"
 )
 
 func TestRoutes(t *testing.T) {

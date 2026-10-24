@@ -1,7 +1,7 @@
 #!/bin/sh
 # Installs or updates flowy on this machine with Docker Compose.
 #
-#   curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/selfhostit/flowy/main/deploy/install.sh | sh
 #
 # or, from a clone, `sh deploy/install.sh [folder]`. It sets up a folder
 # (~/flowy by default) with the compose files and a .env, asks for a Tailscale
@@ -11,7 +11,7 @@
 set -eu
 
 app=flowy
-repo=${FLOWY_REPO:-kalfasyan/flowy}
+repo=${FLOWY_REPO:-selfhostit/flowy}
 source=${FLOWY_SOURCE:-https://raw.githubusercontent.com/$repo/main/deploy}
 dir=${1:-${FLOWY_DIR:-$HOME/$app}}
 files="docker-compose.yml docker-compose.tailscale.yml .env.example"
