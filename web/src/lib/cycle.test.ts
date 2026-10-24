@@ -135,7 +135,10 @@ describe('fertility', () => {
 describe('currentCycle', () => {
   it('runs from the last period to the day before the next', () => {
     const a = analyze(range('2026-01-01', 5), defaults, d('2026-01-10'));
-    expect(currentCycle(a, d('2026-01-10'))).toEqual({ start: d('2026-01-01'), end: d('2026-01-28') });
+    expect(currentCycle(a, d('2026-01-10'))).toEqual({
+      start: d('2026-01-01'),
+      end: d('2026-01-28'),
+    });
     expect(currentCycle(analyze([], defaults, d('2026-01-10')), d('2026-01-10'))).toBeNull();
   });
 

@@ -4,12 +4,17 @@
   import { session } from './lib/session.svelte';
   import Home from './components/Home.svelte';
   import Login from './components/Login.svelte';
+  import Partner from './components/Partner.svelte';
   import Setup from './components/Setup.svelte';
 
   // Signed-out visitors see the setup screen on a new install, the sign-in form otherwise.
   // Anyone already signed in means setup is done.
   let setupNeeded = $state<boolean | null>(session.user ? false : null);
   let error = $state('');
+
+  // a partner's share link works whether or not anyone is signed in
+  const partnerToken = () => location.hash.match(/^#partner\/([a-z0-9]+)$/)?.[1] ?? '';
+  let partner = $state(partnerToken());
 
   async function checkSetup() {
     error = '';
@@ -21,12 +26,22 @@
   }
 
   onMount(() => {
-    if (session.user) session.refresh();
-    else checkSetup();
+    const start = () => {
+      if (partner) return;
+      if (session.user) session.refresh();
+      else if (setupNeeded === null) checkSetup();
+    };
+    addEventListener('hashchange', () => {
+      partner = partnerToken();
+      start();
+    });
+    start();
   });
 </script>
 
-{#if session.user}
+{#if partner}
+  <Partner token={partner} />
+{:else if session.user}
   <Home />
 {:else if error}
   <main class="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-4 px-6">

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { toDay } from '../lib/cycle';
-  import { formatDay } from '../lib/format';
+  import { mostlyIn, stats, toDay, type CyclePhase, type Day } from '../lib/cycle';
+  import { days, formatDay } from '../lib/format';
   import { moods, symptoms } from '../lib/log';
   import { tracker } from '../lib/tracker.svelte';
 
@@ -9,17 +9,64 @@
   const cycles = $derived([...a.history].reverse().slice(0, 13));
   const longest = $derived(Math.max(35, ...cycles.map((c) => c.length)));
   const short = (d: number) => formatDay(d, { month: 'short', day: 'numeric' });
+  const s = $derived(stats(a.history));
 
+  // the last cycles as columns, oldest first, scaled between a little under the
+  // shortest and a little over the longest so differences show
+  const trend = $derived.by(() => {
+    if (!s) return null;
+    const recent = a.history.filter((c) => c.length >= 15 && c.length <= 60).slice(-12);
+    const lo = Math.max(0, s.shortest - 6);
+    const hi = s.longest + 2;
+    const h = (n: number) => ((n - lo) / (hi - lo)) * 100;
+    return { recent, h, avg: h(a.cycleLength) };
+  });
+
+  // the next periods and fertile windows
+  const coming = $derived(
+    a.predicted.slice(0, 3).map((p) => {
+      const o = a.ovulations.find((o) => o > p.start - a.cycleLength && o < p.start);
+      return { period: p, fertile: o === undefined ? null : { start: o - 5, end: o + 1 } };
+    }),
+  );
+  const inDays = (d: Day) => {
+    const n = d - tracker.now;
+    return n <= 0 ? 'now' : n === 1 ? 'tomorrow' : `in ${days(n)}`;
+  };
+
+  const when: Record<CyclePhase, string> = {
+    menstrual: 'mostly during your period',
+    follicular: 'mostly after your period',
+    fertile: 'mostly around ovulation',
+    luteal: 'mostly in the days before your period',
+  };
+
+  // the most logged symptoms (your own too) or moods, and when in the cycle they show up
   function top(field: 'symptoms' | 'moods', labels: typeof symptoms) {
-    const counts = new Map<string, number>();
+    const seen = new Map<string, { label: string; icon: string; days: Day[] }>();
+    const add = (key: string, label: string, icon: string, day: Day) => {
+      const item = seen.get(key) ?? { label, icon, days: [] };
+      item.days.push(day);
+      seen.set(key, item);
+    };
     for (const l of tracker.logs.values()) {
-      for (const v of l[field] ?? []) counts.set(v, (counts.get(v) ?? 0) + 1);
+      const day = toDay(l.date);
+      for (const v of l[field] ?? []) {
+        const known = labels.find((x) => x.value === v);
+        if (known) add(v, known.label, known.icon, day);
+      }
+      if (field === 'symptoms') {
+        for (const c of l.custom_symptoms ?? [])
+          add(`own:${c.label.toLowerCase()}`, c.label, c.icon, day);
+      }
     }
-    return [...counts]
-      .sort((x, y) => y[1] - x[1])
+    return [...seen]
+      .sort((x, y) => y[1].days.length - x[1].days.length)
       .slice(0, 5)
-      .map(([v, count]) => ({ ...labels.find((l) => l.value === v)!, count }))
-      .filter((x) => x.label);
+      .map(([value, item]) => {
+        const phase = mostlyIn(a, item.days);
+        return { value, ...item, count: item.days.length, when: phase ? when[phase] : '' };
+      });
   }
   const topSymptoms = $derived(top('symptoms', symptoms));
   const topMoods = $derived(top('moods', moods));
@@ -64,6 +111,98 @@
   <p class="px-1 text-sm text-zinc-500">
     These are your settings for now. After two logged periods, Flowy uses your own averages.
   </p>
+{/if}
+
+{#if s && trend}
+  <section class="card flex flex-col gap-4">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 class="font-semibold">How regular you are</h2>
+        <p class="text-sm text-zinc-500">
+          Your last {s.count} cycles · average {a.cycleLength} days
+        </p>
+      </div>
+      <span
+        class="rounded-full px-3 py-1 text-xs font-semibold {s.regular
+          ? 'bg-fertile-100 text-fertile-700 dark:bg-fertile-500/20 dark:text-fertile-500'
+          : 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'}"
+        >{s.regular ? 'Regular' : 'Irregular'}</span
+      >
+    </div>
+
+    <div class="relative flex h-32 items-end gap-1.5" aria-hidden="true">
+      <div
+        class="absolute inset-x-0 border-t-2 border-dashed border-zinc-300 dark:border-zinc-600"
+        style:bottom="{trend.avg}%"
+      ></div>
+      {#each trend.recent as c (c.start)}
+        <div class="flex h-full flex-1 flex-col items-center justify-end gap-1">
+          <span class="text-[10px] font-semibold text-zinc-500">{c.length}</span>
+          <div
+            class="w-full max-w-8 rounded-t-lg {c.length === s.shortest || c.length === s.longest
+              ? 'bg-brand-500'
+              : 'bg-brand-400/60'}"
+            style:height="{trend.h(c.length)}%"
+          ></div>
+        </div>
+      {/each}
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-center">
+      <div class="rounded-xl bg-zinc-50 py-2 dark:bg-zinc-800/60">
+        <p class="text-lg font-bold">{s.shortest}</p>
+        <p class="text-xs text-zinc-500">shortest</p>
+      </div>
+      <div class="rounded-xl bg-zinc-50 py-2 dark:bg-zinc-800/60">
+        <p class="text-lg font-bold">{s.longest}</p>
+        <p class="text-xs text-zinc-500">longest</p>
+      </div>
+      <div class="rounded-xl bg-zinc-50 py-2 dark:bg-zinc-800/60">
+        <p class="text-lg font-bold">±{Math.ceil(s.spread / 2)}</p>
+        <p class="text-xs text-zinc-500">days of variation</p>
+      </div>
+    </div>
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">
+      {s.regular
+        ? `Your cycles stay within ${days(s.spread)} of each other, so predictions should be close.`
+        : `Your cycles vary by ${days(s.spread)}, so give predictions a few days either way. A big change from your usual is worth mentioning to a doctor.`}
+      Periods last {s.shortestPeriod === s.longestPeriod
+        ? days(s.shortestPeriod)
+        : `${s.shortestPeriod} to ${s.longestPeriod} days`}.
+    </p>
+  </section>
+{/if}
+
+{#if coming.length}
+  <section class="card flex flex-col gap-3">
+    <h2 class="font-semibold">Coming up</h2>
+    {#each coming as c, i (c.period.start)}
+      <div
+        class="flex flex-col gap-1.5 {i
+          ? 'border-t border-zinc-100 pt-3 dark:border-zinc-800'
+          : ''}"
+      >
+        {#if c.fertile && c.fertile.end >= tracker.now}
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <span class="flex items-center gap-2"
+              ><span class="size-2.5 rounded-full bg-fertile-500"></span>Fertile window</span
+            >
+            <span class="text-zinc-500"
+              >{short(c.fertile.start)} – {short(c.fertile.end)} · {inDays(c.fertile.start)}</span
+            >
+          </div>
+        {/if}
+        <div class="flex items-center justify-between gap-3 text-sm">
+          <span class="flex items-center gap-2 font-medium"
+            ><span class="size-2.5 rounded-full bg-brand-500"></span>Period</span
+          >
+          <span class="text-zinc-500"
+            >{short(c.period.start)} – {short(c.period.end)} · {inDays(c.period.start)}</span
+          >
+        </div>
+      </div>
+    {/each}
+  </section>
 {/if}
 
 <section class="card flex flex-col gap-3">
@@ -116,9 +255,12 @@
     <section class="card flex flex-col gap-2">
       <h2 class="font-semibold">{group.title}</h2>
       {#each group.list as item (item.value)}
-        <div class="flex justify-between text-sm">
-          <span>{item.icon} {item.label}</span>
-          <span class="text-zinc-500">{item.count} {item.count === 1 ? 'day' : 'days'}</span>
+        <div class="flex items-center justify-between gap-3 text-sm">
+          <span class="flex flex-col">
+            <span>{item.icon} {item.label}</span>
+            {#if item.when}<span class="text-xs text-zinc-500">{item.when}</span>{/if}
+          </span>
+          <span class="shrink-0 text-zinc-500">{days(item.count)}</span>
         </div>
       {/each}
     </section>

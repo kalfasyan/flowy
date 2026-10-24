@@ -6,6 +6,7 @@
   import { session } from '../lib/session.svelte';
   import { tracker } from '../lib/tracker.svelte';
   import Notifications from './Notifications.svelte';
+  import PartnerShare from './PartnerShare.svelte';
 
   const user = $derived(session.user!);
   const version = pb
@@ -134,6 +135,8 @@
 </section>
 
 <Notifications />
+
+<PartnerShare />
 
 <section class="card flex items-center justify-between gap-4">
   <div>

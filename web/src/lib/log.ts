@@ -115,7 +115,9 @@ export function exportCsv(logs: Iterable<DayLog>): string {
   const cell = (v: unknown) => {
     const s = Array.isArray(v)
       ? v.map((x: string | CustomSymptom) => (typeof x === 'string' ? x : x.label)).join(' ')
-      : v === false || v === 0 || v == null ? '' : String(v);
+      : v === false || v === 0 || v == null
+        ? ''
+        : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const rows = [...logs]

@@ -2,7 +2,17 @@
   import { untrack } from 'svelte';
   import { cycleDay, pregnancyChance, toDay } from '../lib/cycle';
   import { formatDay } from '../lib/format';
-  import { flows, moods, symptoms, type DayLog, type Flow } from '../lib/log';
+  import {
+    customIcons,
+    customLabelMax,
+    customSymptoms,
+    flows,
+    moods,
+    symptoms,
+    type CustomSymptom,
+    type DayLog,
+    type Flow,
+  } from '../lib/log';
   import { errorMessage } from '../lib/pb';
   import { tracker } from '../lib/tracker.svelte';
 
@@ -14,6 +24,7 @@
   const saved = untrack(() => tracker.logs.get(date));
   let flow = $state<Flow>(saved?.flow ?? '');
   let picked = $state<string[]>([...(saved?.symptoms ?? [])]);
+  let custom = $state<CustomSymptom[]>([...(saved?.custom_symptoms ?? [])]);
   let feelings = $state<string[]>([...(saved?.moods ?? [])]);
   let sex = $state<DayLog['sex']>(saved?.sex ?? '');
   let pill = $state(saved?.pill ?? false);
@@ -26,6 +37,36 @@
   const toggle = (list: string[], value: string) =>
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
+  // symptoms of your own: the ones logged on any day, and any added here
+  const same = (a: CustomSymptom, b: CustomSymptom) =>
+    a.label.toLowerCase() === b.label.toLowerCase();
+  const known = untrack(() => customSymptoms(tracker.logs.values()));
+  let added = $state<CustomSymptom[]>([]);
+  const yours = $derived([
+    ...known,
+    ...[...custom, ...added].filter(
+      (s, i, all) => !known.some((k) => same(k, s)) && all.findIndex((x) => same(x, s)) === i,
+    ),
+  ]);
+  const toggleCustom = (s: CustomSymptom) =>
+    (custom = custom.some((c) => same(c, s))
+      ? custom.filter((c) => !same(c, s))
+      : [...custom, { label: s.label, icon: s.icon }]);
+
+  let adding = $state(false);
+  let newLabel = $state('');
+  let newIcon = $state(customIcons[0]);
+  function addCustom(e: SubmitEvent) {
+    e.preventDefault();
+    const label = newLabel.trim().replace(/\s+/g, ' ');
+    if (!label) return;
+    const s = yours.find((y) => same(y, { label, icon: '' })) ?? { label, icon: newIcon };
+    if (!yours.some((y) => same(y, s))) added = [...added, s];
+    if (!custom.some((c) => same(c, s))) toggleCustom(s);
+    newLabel = '';
+    adding = false;
+  }
+
   async function save() {
     busy = true;
     error = '';
@@ -33,6 +74,7 @@
       await tracker.save(date, {
         flow,
         symptoms: picked,
+        custom_symptoms: custom,
         moods: feelings,
         sex,
         pill,
@@ -105,7 +147,59 @@
               onclick={() => (picked = toggle(picked, s.value))}>{s.icon} {s.label}</button
             >
           {/each}
+          {#each yours as s (s.label.toLowerCase())}
+            <button
+              class="chip"
+              aria-pressed={custom.some((c) => same(c, s))}
+              onclick={() => toggleCustom(s)}>{s.icon} {s.label}</button
+            >
+          {/each}
+          {#if !adding}
+            <button
+              class="chip border-dashed text-zinc-500 dark:text-zinc-400"
+              onclick={() => (adding = true)}>＋ Add your own</button
+            >
+          {/if}
         </div>
+        {#if adding}
+          <form
+            class="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
+            onsubmit={addCustom}
+          >
+            <div class="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Icon">
+              {#each customIcons as icon (icon)}
+                <button
+                  type="button"
+                  class="flex size-9 items-center justify-center rounded-full text-lg transition {newIcon ===
+                  icon
+                    ? 'bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-500/15'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}"
+                  role="radio"
+                  aria-checked={newIcon === icon}
+                  aria-label={icon}
+                  onclick={() => (newIcon = icon)}>{icon}</button
+                >
+              {/each}
+            </div>
+            <div class="flex gap-2">
+              <!-- svelte-ignore a11y_autofocus -->
+              <input
+                bind:value={newLabel}
+                maxlength={customLabelMax}
+                placeholder="Like “Dizzy” or “Hot flushes”"
+                aria-label="Symptom"
+                autofocus
+              />
+              <button class="btn-primary shrink-0" disabled={!newLabel.trim()}>Add</button>
+            </div>
+            <div class="flex items-center justify-between text-xs text-zinc-500">
+              <span>It stays in your list for other days.</span>
+              <button type="button" class="font-semibold" onclick={() => (adding = false)}
+                >Cancel</button
+              >
+            </div>
+          </form>
+        {/if}
       </section>
 
       <section class="flex flex-col gap-2">

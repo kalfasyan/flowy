@@ -9,7 +9,12 @@
   const phase = $derived(tracker.phases.get(day));
   const log = $derived(tracker.logs.get(toIso(day)));
   const noted = $derived(
-    !!log && (!!log.symptoms?.length || !!log.moods?.length || !!log.notes || !!log.sex),
+    !!log &&
+      (!!log.symptoms?.length ||
+        !!log.custom_symptoms?.length ||
+        !!log.moods?.length ||
+        !!log.notes ||
+        !!log.sex),
   );
 
   const styles = {
