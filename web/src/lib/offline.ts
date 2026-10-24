@@ -59,6 +59,7 @@ export function fieldsOf(log: Partial<DayLog>): DayFields {
     date: log.date ?? '',
     flow: log.flow ?? '',
     symptoms: log.symptoms ?? [],
+    custom_symptoms: log.custom_symptoms ?? [],
     moods: log.moods ?? [],
     sex: log.sex ?? '',
     pill: log.pill ?? false,

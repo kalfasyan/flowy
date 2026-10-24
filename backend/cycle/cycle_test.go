@@ -62,3 +62,24 @@ func TestPeriodsBridgeAMissedDay(t *testing.T) {
 		t.Errorf("got %v", ps)
 	}
 }
+
+// the same days as the cyclePhase test in web/src/lib/cycle.test.ts
+func TestPhase(t *testing.T) {
+	bleeding := run(t, "2026-01-01", 5)
+	for date, want := range map[string]string{
+		"2026-01-02": "menstrual",
+		"2026-01-07": "follicular",
+		"2026-01-15": "fertile",
+		"2026-01-20": "luteal",
+	} {
+		now := day(t, date)
+		f, _ := Predict(bleeding, Defaults, now)
+		if got := f.Phase(now); got != want {
+			t.Errorf("phase on %s = %s, want %s", date, got, want)
+		}
+	}
+	f, _ := Predict(bleeding, Defaults, day(t, "2026-01-10"))
+	if f.LastStart != day(t, "2026-01-01") || f.PeriodEnd != day(t, "2026-01-05") || f.CycleLength != 28 {
+		t.Errorf("got %+v", f)
+	}
+}

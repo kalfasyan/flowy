@@ -18,19 +18,28 @@ small server). Install it on your phone from the browser.
 
 - **Today:** days until your period (or which day of it you're on, or how late it
   is), cycle day, chance of pregnancy, the phase you're in, and today's log.
+- **Cycle chart:** this cycle as a curve of the chance of pregnancy over your period,
+  fertile and ovulation days. Drag across it to look at any day.
 - **Mochi:** an animated cat that naps during your period, plays, sends hearts in
   your fertile window and curls up before your next period, with a tip for each phase.
 - **Calendar:** logged periods, predicted periods, fertile days and ovulation.
   Tap a day to log it, or edit period days in one go.
-- **Day log:** flow, symptoms, moods, sex, pill, temperature, weight and notes.
-- **Insights:** average cycle and period length, cycle history, temperature
-  chart, and your most common symptoms and moods.
+- **Day log:** flow, symptoms, moods, sex, pill, temperature, weight and notes. Add
+  symptoms of your own with an icon; they stay in your list.
+- **Insights:** average cycle and period length, how regular you are (shortest,
+  longest and a chart of recent cycles), the next periods and fertile windows,
+  cycle history, temperature chart, and your most common symptoms and moods with
+  when in your cycle they tend to show up.
+- **Share with your partner:** a private link, no account needed, showing your
+  phase, when your period is due, fertile days, tips on how to support you and a
+  quiz on how well they know your cycle. Optionally today's moods and symptoms.
+  Renew or turn it off any time.
 - **Reminders:** a push notification two days before your period, when your
   fertile window starts, and for your pill.
 - **Works offline:** logs are saved on the phone and sent to the server when it
   is reachable again.
 - **Private:** sign-in with email and password, each person only sees their own
-  calendar, and the data never leaves your server. Export it as CSV any time.
+  calendar (a partner link shows a summary, never your history or notes), and the data never leaves your server. Export it as CSV any time.
 
 Predictions are estimates, not a form of birth control.
 

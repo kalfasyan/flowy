@@ -63,6 +63,27 @@ type Forecast struct {
 	Late int
 	// Ovulations are the expected ovulation days of this cycle and the next.
 	Ovulations []Day
+	// LastStart is when the last logged period started.
+	LastStart Day
+	// PeriodEnd is when the last period ends, logged or expected.
+	PeriodEnd Day
+	// CycleLength and PeriodLength are learned from the logs, or the settings.
+	CycleLength, PeriodLength int
+}
+
+// Phase names the part of the cycle now falls in, like cyclePhase in the web app:
+// "menstrual", "follicular", "fertile" or "luteal".
+func (f Forecast) Phase(now Day) string {
+	switch o := f.Ovulations[0]; {
+	case f.InPeriod:
+		return "menstrual"
+	case o <= f.LastStart || now > o+1:
+		return "luteal"
+	case now >= o-5:
+		return "fertile"
+	default:
+		return "follicular"
+	}
 }
 
 const learnFrom = 6
@@ -90,6 +111,8 @@ func Predict(bleeding []Day, s Settings, now Day) (f Forecast, ok bool) {
 
 	last := ps[len(ps)-1]
 	end := max(last.End, last.Start+Day(periodLength)-1)
+	f.LastStart, f.PeriodEnd = last.Start, end
+	f.CycleLength, f.PeriodLength = cycleLength, periodLength
 	f.InPeriod = last.Start <= now && now <= end
 	f.NextStart = last.Start + Day(cycleLength)
 	if !f.InPeriod && now > f.NextStart {

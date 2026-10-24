@@ -4,6 +4,7 @@
   import { moods, symptoms } from '../lib/log';
   import { tracker } from '../lib/tracker.svelte';
   import Cat from './Cat.svelte';
+  import CycleChart from './CycleChart.svelte';
   import DayDot from './DayDot.svelte';
 
   let { onlog }: { onlog: (date: string) => void } = $props();
@@ -60,6 +61,7 @@
 
   const tags = $derived([
     ...(todayLog?.symptoms ?? []).map((s) => symptoms.find((x) => x.value === s)),
+    ...(todayLog?.custom_symptoms ?? []).map((s) => ({ ...s, value: s.label })),
     ...(todayLog?.moods ?? []).map((m) => moods.find((x) => x.value === m)),
   ]);
 
@@ -155,6 +157,8 @@
     <p class="mt-1 text-xs text-zinc-500">from your fertile window</p>
   </section>
 </div>
+
+<CycleChart {onlog} />
 
 <section class="card flex items-center gap-3 py-3 pl-2">
   <Cat phase={phaseNow} />

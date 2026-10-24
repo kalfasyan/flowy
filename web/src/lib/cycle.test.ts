@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   analyze,
+  currentCycle,
   cycleDay,
   cyclePhase,
   defaults,
+  fertility,
+  mostlyIn,
   periods,
   phases,
   pregnancyChance,
+  stats,
   toDay,
   toIso,
   today,
@@ -109,5 +113,76 @@ describe('cyclePhase', () => {
     expect(cyclePhase(a, d('2026-01-15'))).toBe('fertile');
     expect(cyclePhase(a, d('2026-01-20'))).toBe('luteal');
     expect(cyclePhase(a, d('2025-12-20'))).toBeNull();
+  });
+});
+
+describe('fertility', () => {
+  const a = analyze(range('2026-01-01', 5), defaults, d('2026-01-10'));
+
+  it('peaks around ovulation and agrees with the chance', () => {
+    const peak = fertility(a, d('2026-01-15'));
+    expect(peak).toBe(1);
+    expect(fertility(a, d('2026-01-13'))).toBeGreaterThan(fertility(a, d('2026-01-11')));
+    expect(fertility(a, d('2026-01-03'))).toBeLessThan(0.1);
+    for (let day = d('2026-01-01'); day < d('2026-02-01'); day++) {
+      const f = fertility(a, day);
+      const want = f >= 0.8 ? 'high' : f >= 0.3 ? 'medium' : 'low';
+      expect(pregnancyChance(a, day)).toBe(want);
+    }
+  });
+});
+
+describe('currentCycle', () => {
+  it('runs from the last period to the day before the next', () => {
+    const a = analyze(range('2026-01-01', 5), defaults, d('2026-01-10'));
+    expect(currentCycle(a, d('2026-01-10'))).toEqual({
+      start: d('2026-01-01'),
+      end: d('2026-01-28'),
+    });
+    expect(currentCycle(analyze([], defaults, d('2026-01-10')), d('2026-01-10'))).toBeNull();
+  });
+
+  it('stretches to today when the period is late', () => {
+    const a = analyze(range('2026-01-01', 5), defaults, d('2026-02-02'));
+    expect(currentCycle(a, d('2026-02-02'))?.end).toBe(d('2026-02-02'));
+  });
+});
+
+describe('stats', () => {
+  const cycle = (length: number, periodLength = 5) => ({ start: 0, length, periodLength });
+
+  it('needs two cycles', () => {
+    expect(stats([cycle(28)])).toBeNull();
+  });
+
+  it('measures the spread and calls up to 7 days regular', () => {
+    expect(stats([cycle(27, 4), cycle(31, 6), cycle(29)])).toEqual({
+      count: 3,
+      shortest: 27,
+      longest: 31,
+      spread: 4,
+      regular: true,
+      shortestPeriod: 4,
+      longestPeriod: 6,
+    });
+    expect(stats([cycle(25), cycle(34)])?.regular).toBe(false);
+  });
+
+  it('leaves out cycles that are most likely a missed log', () => {
+    expect(stats([cycle(28), cycle(90), cycle(30)])).toMatchObject({ count: 2, longest: 30 });
+  });
+});
+
+describe('mostlyIn', () => {
+  const a = analyze(range('2026-01-01', 5), defaults, d('2026-01-10'));
+
+  it('names the phase most days fall in', () => {
+    expect(mostlyIn(a, range('2026-01-01', 3))).toBe('menstrual');
+    expect(mostlyIn(a, [...range('2026-01-01', 3), d('2026-01-20')])).toBe('menstrual');
+  });
+
+  it('stays quiet with too few days or no clear phase', () => {
+    expect(mostlyIn(a, range('2026-01-01', 2))).toBeNull();
+    expect(mostlyIn(a, [...range('2026-01-01', 3), ...range('2026-01-19', 3)])).toBeNull();
   });
 });

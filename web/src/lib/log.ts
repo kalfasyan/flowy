@@ -4,11 +4,18 @@ import type { RecordModel } from 'pocketbase';
 
 export type Flow = '' | 'spotting' | 'light' | 'medium' | 'heavy';
 
+/** A symptom someone added themselves, kept on each day it's logged. */
+export interface CustomSymptom {
+  label: string;
+  icon: string;
+}
+
 /** What's logged for a day. */
 export interface DayFields {
   date: string;
   flow: Flow;
   symptoms: string[];
+  custom_symptoms: CustomSymptom[];
   moods: string[];
   sex: '' | 'protected' | 'unprotected';
   pill: boolean;
@@ -61,6 +68,7 @@ export function isEmpty(log: Partial<DayLog>): boolean {
   return (
     !log.flow &&
     !log.symptoms?.length &&
+    !log.custom_symptoms?.length &&
     !log.moods?.length &&
     !log.sex &&
     !log.pill &&
@@ -70,12 +78,33 @@ export function isEmpty(log: Partial<DayLog>): boolean {
   );
 }
 
+/** Icons to pick from for a symptom of your own. */
+export const customIcons = ['✨', '🤧', '😵‍💫', '🔥', '🥶', '💤', '🦵', '🫃', '🍔', '🧠'];
+
+/** The longest label a symptom of your own can have; the server checks it too. */
+export const customLabelMax = 30;
+
+/** The symptoms someone added themselves, most used first, from all their logs. */
+export function customSymptoms(logs: Iterable<DayLog>): (CustomSymptom & { count: number })[] {
+  const byLabel = new Map<string, CustomSymptom & { count: number }>();
+  for (const l of logs) {
+    for (const s of l.custom_symptoms ?? []) {
+      const key = s.label.toLowerCase();
+      const seen = byLabel.get(key);
+      if (seen) seen.count++;
+      else byLabel.set(key, { ...s, count: 1 });
+    }
+  }
+  return [...byLabel.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
 /** Day logs as CSV, oldest first, for a spreadsheet. */
 export function exportCsv(logs: Iterable<DayLog>): string {
   const fields = [
     'date',
     'flow',
     'symptoms',
+    'custom_symptoms',
     'moods',
     'sex',
     'pill',
@@ -84,7 +113,11 @@ export function exportCsv(logs: Iterable<DayLog>): string {
     'notes',
   ] as const;
   const cell = (v: unknown) => {
-    const s = Array.isArray(v) ? v.join(' ') : v === false || v === 0 || v == null ? '' : String(v);
+    const s = Array.isArray(v)
+      ? v.map((x: string | CustomSymptom) => (typeof x === 'string' ? x : x.label)).join(' ')
+      : v === false || v === 0 || v == null
+        ? ''
+        : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const rows = [...logs]
