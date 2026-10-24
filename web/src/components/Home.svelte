@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { badge } from '../lib/badge.svelte';
+  import { cycleDay, toIso } from '../lib/cycle';
   import { tracker } from '../lib/tracker.svelte';
   import Calendar from './Calendar.svelte';
   import DayLogSheet from './DayLogSheet.svelte';
@@ -33,11 +35,31 @@
   let logging = $state<string | null>(null);
   const log = (date: string) => (logging = date);
 
+  // #log, from the icon's long-press menu, opens today's log on the Today tab
+  function logFromHash() {
+    if (location.hash !== '#log') return;
+    history.replaceState(null, '', '#today');
+    tab = 'today';
+    log(toIso(tracker.now));
+  }
+
+  // the day of the cycle on the app's icon, kept current while the app is open
+  $effect(() => {
+    badge.show(tracker.loaded ? cycleDay(tracker.analysis, tracker.now) : null);
+  });
+
   onMount(() => {
     tracker.load();
-    const onHash = () => (tab = fromHash());
+    logFromHash();
+    const onHash = () => {
+      tab = fromHash();
+      logFromHash();
+    };
     addEventListener('hashchange', onHash);
-    return () => removeEventListener('hashchange', onHash);
+    return () => {
+      removeEventListener('hashchange', onHash);
+      badge.show(null);
+    };
   });
 </script>
 
