@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { badge } from '../lib/badge.svelte';
   import { defaults } from '../lib/cycle';
   import { exportCsv } from '../lib/log';
   import { install } from '../lib/install.svelte';
@@ -135,6 +136,22 @@
 </section>
 
 <Notifications />
+
+{#if badge.supported}
+  <section class="card flex flex-col gap-3">
+    <label class="flex-row items-center justify-between font-normal">
+      Show the day of your cycle on the app icon
+      <input
+        type="checkbox"
+        checked={badge.on}
+        onchange={(e) => badge.set(e.currentTarget.checked)}
+      />
+    </label>
+    <p class="text-sm text-zinc-500">
+      Only on this device. It updates when you open Flowy. On iPhone, turn notifications on too.
+    </p>
+  </section>
+{/if}
 
 <PartnerShare />
 
