@@ -1,4 +1,4 @@
-module github.com/kalfasyan/flowy
+module github.com/selfhostit/flowy
 
 go 1.27
 

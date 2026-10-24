@@ -6,9 +6,9 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 
-	"github.com/kalfasyan/flowy/cycle"
-	"github.com/kalfasyan/flowy/jobs"
-	"github.com/kalfasyan/flowy/push"
+	"github.com/selfhostit/flowy/cycle"
+	"github.com/selfhostit/flowy/jobs"
+	"github.com/selfhostit/flowy/push"
 )
 
 // registerReminders sends each morning's period and fertile-window reminders,

@@ -13,7 +13,7 @@ anything to the internet.
 ```
 
 Every push to `main` publishes two images for amd64, arm64 and armv7:
-`ghcr.io/kalfasyan/flowy` (the app) and `ghcr.io/kalfasyan/flowy-worker` (the
+`ghcr.io/selfhostit/flowy` (the app) and `ghcr.io/selfhostit/flowy-worker` (the
 Python workers). A tag like `v1.2.0` publishes `:v1.2.0` of both.
 
 ## Install
@@ -21,7 +21,7 @@ Python workers). A tag like `v1.2.0` publishes `:v1.2.0` of both.
 On the machine, as a user that can run `docker`:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/selfhostit/flowy/main/deploy/install.sh | sh
 ```
 
 This creates `~/flowy` with the compose files, a `.env` and a `pb_data` folder
@@ -60,7 +60,7 @@ cd ~/flowy && docker compose pull && docker compose up -d
 
 Running the install script again does the same and also refreshes the compose
 files. To stay on a release, or go back to one, set `FLOWY_IMAGE` (and
-`FLOWY_WORKER_IMAGE`) in `.env` to a tag, like `ghcr.io/kalfasyan/flowy:v1.2.0`.
+`FLOWY_WORKER_IMAGE`) in `.env` to a tag, like `ghcr.io/selfhostit/flowy:v1.2.0`.
 Database migrations run on start, so take a backup before going back across one.
 
 ## Backups and restore
@@ -97,7 +97,7 @@ address:
 docker run -d --name worker --restart unless-stopped \
   -e FLOWY_URL=https://flowy.<your-tailnet>.ts.net \
   -e FLOWY_WORKER=camera -e FLOWY_WORKER_PASSWORD=... -e TZ=Europe/Athens \
-  ghcr.io/kalfasyan/flowy-worker python camera.py
+  ghcr.io/selfhostit/flowy-worker python camera.py
 ```
 
 ## Synology NAS

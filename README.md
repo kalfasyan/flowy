@@ -100,7 +100,7 @@ those records and notify people.
 On any Linux machine with Docker (a NAS, a Raspberry Pi, a server):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kalfasyan/flowy/main/deploy/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/selfhostit/flowy/main/deploy/install.sh | sh
 ```
 
 It asks for a Tailscale auth key, so your devices reach the app at
@@ -139,8 +139,8 @@ Makefile            run `make` to see every command
 | `make run`   | Build the Docker image and run it on :8090            |
 | `make smoke` | Deploy both images with Compose and test end to end   |
 
-Pushes to `main` publish `ghcr.io/kalfasyan/flowy` and
-`ghcr.io/kalfasyan/flowy-worker` for amd64, arm64 and armv7; a `v*` tag
+Pushes to `main` publish `ghcr.io/selfhostit/flowy` and
+`ghcr.io/selfhostit/flowy-worker` for amd64, arm64 and armv7; a `v*` tag
 publishes that version.
 
 ## Support
