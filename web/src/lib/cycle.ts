@@ -165,3 +165,70 @@ export function cyclePhase(a: Analysis, day: Day): CyclePhase | null {
   if (ovulation === undefined || day > ovulation + 1) return 'luteal';
   return day >= ovulation - 5 ? 'fertile' : 'follicular';
 }
+
+// how likely a day is to lead to pregnancy, relative to the day of ovulation,
+// from 5 days before it to the day after; it peaks in the 3 days up to ovulation
+const fertileCurve = [0.3, 0.45, 0.6, 0.8, 0.95, 1, 0.35];
+const baseline = 0.04;
+
+/** A smooth 0–1 version of pregnancyChance, for drawing the cycle chart. */
+export function fertility(a: Analysis, day: Day): number {
+  if (a.periods.some((p) => p.start <= day && day <= p.end)) return baseline;
+  let best = baseline;
+  for (const o of a.ovulations) {
+    const i = day - o + 5;
+    if (i >= 0 && i < fertileCurve.length) best = Math.max(best, fertileCurve[i]);
+  }
+  return best;
+}
+
+/** The days of the cycle going on today: from the last period's start to the day before the next. */
+export function currentCycle(a: Analysis, now: Day): Period | null {
+  const last = a.periods.filter((p) => p.start <= now).at(-1);
+  if (!last || a.nextStart === null) return null;
+  // a late period stretches the cycle up to today
+  return { start: last.start, end: Math.max(last.start + a.cycleLength - 1, now) };
+}
+
+export interface Stats {
+  /** How many finished cycles the numbers come from. */
+  count: number;
+  shortest: number;
+  longest: number;
+  /** Days between the shortest and the longest cycle. */
+  spread: number;
+  /** Up to 7 days between the shortest and longest cycle counts as regular. */
+  regular: boolean;
+  shortestPeriod: number;
+  longestPeriod: number;
+}
+
+/** How much the last year of cycles varied, or null with fewer than two of them. */
+export function stats(history: PastCycle[]): Stats | null {
+  const recent = history.filter((c) => usableCycle(c.length)).slice(-13);
+  if (recent.length < 2) return null;
+  const lengths = recent.map((c) => c.length);
+  const periods = recent.map((c) => c.periodLength);
+  const shortest = Math.min(...lengths);
+  const longest = Math.max(...lengths);
+  return {
+    count: recent.length,
+    shortest,
+    longest,
+    spread: longest - shortest,
+    regular: longest - shortest <= 7,
+    shortestPeriod: Math.min(...periods),
+    longestPeriod: Math.max(...periods),
+  };
+}
+
+/** The phase most of these days fall in, when there are enough days and one clearly leads. */
+export function mostlyIn(a: Analysis, days: Day[]): CyclePhase | null {
+  const counts = new Map<CyclePhase, number>();
+  for (const d of days) {
+    const p = cyclePhase(a, d);
+    if (p) counts.set(p, (counts.get(p) ?? 0) + 1);
+  }
+  const [top] = [...counts].sort((x, y) => y[1] - x[1]);
+  return top && top[1] >= 3 && top[1] / days.length >= 0.6 ? top[0] : null;
+}

@@ -27,11 +27,13 @@ func Register(app core.App, cfg Config) {
 	// scheduled jobs and backups follow the server's time zone (TZ)
 	app.Cron().SetTimezone(time.Local)
 	registerReminders(app)
+	registerDayChecks(app)
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		se.Router.GET("/api/app/info", info)
 		registerSetupRoutes(se)
 		registerWorkerRoutes(se)
+		registerPartnerRoutes(se)
 		push.RegisterRoutes(se)
 
 		// Serve the web app, falling back to index.html for client-side routes.
